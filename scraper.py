@@ -43,8 +43,6 @@ HEADERS = {
     "User-Agent": "BPO-Certification-Scraper/1.0",
 }
 
-SEARCH_URL = "https://duckduckgo.com/html/"
-
 
 @dataclass
 class ScanResult:
