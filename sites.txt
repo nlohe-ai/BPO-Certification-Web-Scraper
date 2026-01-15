@@ -1,1 +1,10 @@
+# BPO Website URLs - One per line
+# Lines starting with # are comments and will be ignored
+#
+# Example format:
+# https://www.yourbposite.com
+# https://www.anotherbpo.com
+#
+# Replace the examples below with your actual BPO website URLs:
+
 https://example.com
