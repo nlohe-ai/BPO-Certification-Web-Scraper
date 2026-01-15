@@ -50,6 +50,9 @@ def is_valid_bpo_url(url: str) -> bool:
         "google.com", "bing.com", "yahoo.com", "facebook.com", "twitter.com",
         "linkedin.com", "youtube.com", "wikipedia.org", "forbes.com",
         "indeed.com", "glassdoor.com", "clutch.co", "gartner.com",
+        "duckduckgo.com", "netquote.com", "capterra.com", "trustpilot.com",
+        "bbb.org", "reddit.com", "quora.com", "instagram.com",
+        "goodfirms.co", "upwork.com", "fiverr.com", "pinterest.com",
     ]
 
     domain_lower = parsed.netloc.lower()
@@ -58,10 +61,14 @@ def is_valid_bpo_url(url: str) -> bool:
             return False
 
     # Exclude obvious non-company paths
-    excluded_paths = ["/search", "/maps", "/news", "/images"]
+    excluded_paths = ["/search", "/maps", "/news", "/images", "/blog/"]
     for excluded in excluded_paths:
         if parsed.path.startswith(excluded):
             return False
+
+    # Exclude ad tracking and affiliate URLs
+    if any(word in url.lower() for word in ["aclick", "ad_provider", "click_metadata", "/aff/"]):
+        return False
 
     return True
 
@@ -81,6 +88,9 @@ def scrape_google_results(query: str, num_results: int = 50, delay: float = 2.0)
     """
     Scrape Google search results for the given query.
 
+    NOTE: Google now requires JavaScript for most searches, so this may return 0 results.
+    DuckDuckGo is recommended as the primary search engine.
+
     Args:
         query: Search query string
         num_results: Target number of results to collect
@@ -89,21 +99,30 @@ def scrape_google_results(query: str, num_results: int = 50, delay: float = 2.0)
     Returns:
         Set of discovered URLs
     """
+    from urllib.parse import quote_plus
+
     discovered_urls: Set[str] = set()
     start = 0
     max_pages = (num_results // 10) + 1  # Google shows ~10 results per page
 
-    print(f"  Searching for: '{query}'")
+    print(f"  Searching Google for: '{query}'")
+    print(f"    Note: Google may block automated searches. Consider using DuckDuckGo instead.")
 
     for page in range(max_pages):
         try:
-            # Google search URL
-            search_url = f"https://www.google.com/search?q={query}&start={start}"
+            # Google search URL with proper encoding
+            search_url = f"https://www.google.com/search?q={quote_plus(query)}&start={start}"
 
             response = requests.get(search_url, headers=HEADERS, timeout=15)
             response.raise_for_status()
 
             soup = BeautifulSoup(response.text, "html.parser")
+
+            # Check if Google is blocking us
+            if "detected unusual traffic" in response.text.lower() or len(soup.find_all("a")) < 5:
+                print(f"    Warning: Google may be blocking automated requests")
+                print(f"    Try using --search-engine duckduckgo instead")
+                break
 
             # Extract search result links
             # Google search results are in <a> tags with specific patterns
@@ -132,6 +151,11 @@ def scrape_google_results(query: str, num_results: int = 50, delay: float = 2.0)
             if len(discovered_urls) >= num_results:
                 break
 
+            # If we got no results on first page, don't try more pages
+            if page == 0 and len(discovered_urls) == 0:
+                print(f"    No results found. Google may be blocking requests.")
+                break
+
             # Move to next page
             start += 10
 
@@ -146,7 +170,12 @@ def scrape_google_results(query: str, num_results: int = 50, delay: float = 2.0)
             print(f"    Warning: Error processing page {page + 1}: {e}")
             continue
 
-    print(f"  Discovered {len(discovered_urls)} unique URLs for this query")
+    if len(discovered_urls) == 0:
+        print(f"  Google returned 0 results (likely blocked)")
+        print(f"  TIP: Use --search-engine duckduckgo for better results")
+    else:
+        print(f"  Discovered {len(discovered_urls)} unique URLs for this query")
+
     return discovered_urls
 
 
@@ -161,48 +190,46 @@ def scrape_duckduckgo_results(query: str, num_results: int = 50) -> Set[str]:
     Returns:
         Set of discovered URLs
     """
+    from urllib.parse import unquote, quote_plus
+
     discovered_urls: Set[str] = set()
 
     print(f"  Searching DuckDuckGo for: '{query}'")
 
     try:
-        search_url = f"https://html.duckduckgo.com/html/?q={query}"
+        # Encode the query properly
+        search_url = f"https://html.duckduckgo.com/html/?q={quote_plus(query)}"
 
         response = requests.get(search_url, headers=HEADERS, timeout=15)
         response.raise_for_status()
 
         soup = BeautifulSoup(response.text, "html.parser")
 
-        # DuckDuckGo results are in result divs
-        for result in soup.find_all("a", class_="result__url"):
-            href = result.get("href", "")
+        # DuckDuckGo wraps URLs in redirect links with uddg= parameter
+        # Find all result links
+        result_links = soup.find_all("a", class_=["result__a", "result__url"])
 
-            if href.startswith("http") and is_valid_bpo_url(href):
-                clean_url = extract_domain_from_url(href)
-                discovered_urls.add(clean_url)
-                print(f"    Found: {clean_url}")
+        for link in result_links:
+            href = link.get("href", "")
+
+            # DuckDuckGo wraps URLs: //duckduckgo.com/l/?uddg=https%3A%2F%2Fexample.com...
+            if "uddg=" in href:
+                # Extract the uddg parameter
+                match = re.search(r"uddg=([^&]+)", href)
+                if match:
+                    encoded_url = match.group(1)
+                    # URL decode it
+                    actual_url = unquote(encoded_url)
+
+                    # Filter out ads and non-company URLs
+                    if is_valid_bpo_url(actual_url) and "duckduckgo.com/y.js" not in actual_url:
+                        clean_url = extract_domain_from_url(actual_url)
+                        if clean_url not in discovered_urls:
+                            discovered_urls.add(clean_url)
+                            print(f"    Found: {clean_url}")
 
                 if len(discovered_urls) >= num_results:
                     break
-
-        # Also check snippet links
-        for result in soup.find_all("a", class_="result__a"):
-            href = result.get("href", "")
-
-            # DuckDuckGo sometimes wraps URLs
-            if "/uddg=" in href:
-                match = re.search(r"uddg=([^&]+)", href)
-                if match:
-                    from urllib.parse import unquote
-                    actual_url = unquote(match.group(1))
-
-                    if is_valid_bpo_url(actual_url):
-                        clean_url = extract_domain_from_url(actual_url)
-                        discovered_urls.add(clean_url)
-                        print(f"    Found: {clean_url}")
-
-            if len(discovered_urls) >= num_results:
-                break
 
     except Exception as e:
         print(f"    Warning: Error searching DuckDuckGo: {e}")

@@ -248,8 +248,8 @@ Examples:
     parser.add_argument(
         "--search-engine",
         choices=["google", "duckduckgo"],
-        default="google",
-        help="Search engine to use for discovery (default: google).",
+        default="duckduckgo",
+        help="Search engine to use for discovery (default: duckduckgo). Note: Google often blocks automated requests.",
     )
     parser.add_argument(
         "--discovery-delay",
