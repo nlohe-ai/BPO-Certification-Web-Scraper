@@ -58,6 +58,28 @@ def read_urls(path: str) -> list[str]:
         return [line.strip() for line in handle if line.strip() and not line.startswith("#")]
 
 
+def discover_bpo_sites(query: str, max_results: int) -> list[str]:
+    params = {"q": query}
+    try:
+        response = requests.get(SEARCH_URL, headers=HEADERS, params=params, timeout=20)
+        response.raise_for_status()
+    except requests.RequestException:
+        return []
+
+    soup = BeautifulSoup(response.text, "html.parser")
+    results: list[str] = []
+    for link in soup.select("a.result__a"):
+        href = link.get("href")
+        if not href:
+            continue
+        normalized = normalize_url(href)
+        if normalized not in results:
+            results.append(normalized)
+        if len(results) >= max_results:
+            break
+    return results
+
+
 def is_same_domain(base: str, target: str) -> bool:
     base_host = urlparse(base).netloc.lower()
     target_host = urlparse(target).netloc.lower()
@@ -190,16 +212,37 @@ def write_results(results: Iterable[ScanResult], output_path: str) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Scrape BPO websites for security certifications.")
-    parser.add_argument("--input", required=True, help="Path to text file with one URL per line.")
+    parser.add_argument("--input", help="Path to text file with one URL per line.")
     parser.add_argument("--output", required=True, help="Path to CSV output.")
     parser.add_argument("--max-pages", type=int, default=6, help="Max pages to scan per site.")
     parser.add_argument("--delay", type=float, default=0.5, help="Delay between page requests (seconds).")
+    parser.add_argument(
+        "--discover",
+        action="store_true",
+        help="Discover BPO sites using a search engine instead of a static input list.",
+    )
+    parser.add_argument(
+        "--discover-query",
+        default="insurance BPO services",
+        help="Search query used when --discover is enabled.",
+    )
+    parser.add_argument(
+        "--discover-max",
+        type=int,
+        default=10,
+        help="Maximum number of discovered sites to scan.",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    urls = read_urls(args.input)
+    if args.discover:
+        urls = discover_bpo_sites(args.discover_query, args.discover_max)
+    elif args.input:
+        urls = read_urls(args.input)
+    else:
+        raise SystemExit("Provide --input or enable --discover to find sites.")
     results = []
     for url in urls:
         results.append(scan_site(url, max_pages=args.max_pages, delay=args.delay))

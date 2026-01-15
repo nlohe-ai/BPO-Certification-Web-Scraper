@@ -12,6 +12,12 @@ pip install -r requirements.txt
 python scraper.py --input sites.txt --output certifications.csv
 ```
 
+To discover BPO sites automatically, use the discovery mode:
+
+```bash
+python scraper.py --discover --discover-query "insurance BPO services" --output certifications.csv
+```
+
 ## How it works
 
 - Reads a list of URLs from `--input` (one per line).
