@@ -1,0 +1,42 @@
+# Search Queries for Insurance BPO Discovery
+# One query per line. Lines starting with # are comments.
+#
+# These queries are optimized for finding insurance BPOs that work with:
+# - Insurance agencies
+# - Insurance brokers
+# - MGAs (Managing General Agents)
+#
+# You can customize these queries for your specific needs.
+
+# General insurance BPO queries
+insurance BPO company
+insurance BPO services agency
+insurance broker BPO services
+insurance agency BPO
+
+# MGA-specific queries
+MGA BPO services
+managing general agent BPO
+MGA back office services
+
+# Service-specific queries
+insurance back office BPO
+insurance policy administration BPO
+insurance processing BPO
+insurance data entry BPO
+insurance claims processing BPO
+insurance document management BPO
+
+# Insurance type-specific queries
+P&C insurance BPO
+property casualty BPO services
+commercial insurance BPO
+personal lines insurance BPO
+life insurance BPO services
+
+# Workflow-specific queries
+insurance outsourcing services broker
+insurance workflow automation BPO
+insurance policy servicing BPO
+insurance renewal processing BPO
+insurance certificate of insurance BPO

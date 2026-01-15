@@ -5,7 +5,50 @@ This tool scrapes BPO (Business Process Outsourcing) websites to detect:
 - Security certifications (ISO 27001, SOC 2, PCI DSS, HIPAA, etc.)
 - Remote work environment mentions (VDI, Citrix, Azure Virtual Desktop, etc.)
 
+**NEW**: The tool now includes automatic website discovery to find 1000+ insurance BPO companies without manual URL compilation.
+
 The results are saved in a CSV file for easy analysis.
+
+## Two Ways to Use This Tool
+
+1. **Discovery Mode** - Automatically find insurance BPO websites using search engines (recommended for finding 1000+ sites)
+2. **Manual Mode** - Provide your own list of URLs to scrape
+
+---
+
+## Discovery Mode (NEW!)
+
+If you need to scan 1000+ insurance BPO websites but don't have a URL list, use discovery mode.
+
+### Quick Discovery Example
+
+```bash
+# Find insurance BPO websites automatically
+python3 scraper.py --discover-only --discovered-urls insurance_bpos.txt --output dummy.csv
+
+# This will search for insurance BPOs and save URLs to insurance_bpos.txt
+# Then you can review and scrape them:
+python3 scraper.py --input insurance_bpos.txt --output results.csv
+```
+
+### Discovery Options
+
+| Option | Description |
+|--------|-------------|
+| `--discover-only` | Find websites but don't scrape yet |
+| `--discover` | Find websites AND scrape them immediately |
+| `--discovered-urls FILE` | Where to save discovered URLs |
+| `--queries FILE` | Custom search queries file |
+| `--results-per-query N` | Number of results per query (default: 20) |
+| `--search-engine` | Use `google` or `duckduckgo` |
+
+### For Complete Discovery Documentation
+
+**See [DISCOVERY_GUIDE.md](DISCOVERY_GUIDE.md)** for detailed information on:
+- How discovery works
+- Finding 1000+ insurance BPOs
+- Custom search queries
+- Best practices and troubleshooting
 
 ---
 
