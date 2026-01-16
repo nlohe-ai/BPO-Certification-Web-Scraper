@@ -61,7 +61,7 @@ def is_valid_bpo_url(url: str) -> bool:
             return False
 
     # Exclude obvious non-company paths
-    excluded_paths = ["/search", "/maps", "/news", "/images", "/blog/"]
+    excluded_paths = ["/search", "/maps", "/news", "/images"]
     for excluded in excluded_paths:
         if parsed.path.startswith(excluded):
             return False
@@ -221,8 +221,12 @@ def scrape_duckduckgo_results(query: str, num_results: int = 50) -> Set[str]:
                     # URL decode it
                     actual_url = unquote(encoded_url)
 
-                    # Filter out ads and non-company URLs
-                    if is_valid_bpo_url(actual_url) and "duckduckgo.com/y.js" not in actual_url:
+                    # Skip ad tracking URLs
+                    if "duckduckgo.com/y.js" in actual_url or "bing.com/aclick" in actual_url:
+                        continue
+
+                    # Filter out non-company URLs
+                    if is_valid_bpo_url(actual_url):
                         clean_url = extract_domain_from_url(actual_url)
                         if clean_url not in discovered_urls:
                             discovered_urls.add(clean_url)
