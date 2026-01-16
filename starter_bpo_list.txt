@@ -1,0 +1,72 @@
+# Starter List of Insurance BPO Companies
+# Pre-populated list to use when discovery doesn't work
+# Total: 50 insurance BPO websites
+#
+# Usage: python3 scraper.py --input starter_bpo_list.txt --output results.csv
+
+# Major Insurance BPO Providers
+https://invensis.net
+https://flatworldsolutions.com
+https://wns.com
+https://firstsource.com
+https://fbspl.com
+https://covenirbpo.com
+https://fusioncx.com
+
+# Insurance Back Office Specialists
+https://agencyheight.com
+https://insurancebackofficepro.com
+https://insurance-bpo.com
+https://insuserve.com
+https://coveroperation.com
+https://assuretrac.com
+
+# P&C Insurance BPO
+https://pcinsuranceoutsourcing.com
+https://marblebox.com
+https://teamfocusins.com
+https://solartis.com
+
+# Data Entry & Processing
+https://bpodataentryhelp.com
+https://relyservices.com
+https://allianzebpo.com
+https://confiebpo.com
+
+# Technology-Focused BPO
+https://dxc.com
+https://accenture.com
+https://cxis.com
+https://westpoint.tech
+
+# Regional Specialists
+https://anywherer.com
+https://jbtmgrp.com
+https://sourcethrive.com
+https://superstaff.com
+https://theremotegroup.com
+
+# Niche Insurance BPO
+https://selectsys.com
+https://getstrada.com
+https://unity-connect.com
+https://staffboom.com
+https://agentsync.io
+
+# Additional Insurance Outsourcing
+https://nfp.com
+https://timedoctor.com
+https://verifiedmarketresearch.com
+https://designrush.com
+https://themanifest.com
+
+# Law Firm BPO (insurance focus)
+https://mayerbrown.com
+https://legalclarity.org
+
+# Training & Support
+https://insurancetrainingcenter.com
+https://insurancejournal.com
+https://archyde.com
+
+# You can add more URLs here as you discover them
